@@ -7,16 +7,17 @@ import Data.Int
 import Data.List
 
 type Frequency = Double
-type Duration = Double
+type Time = Double
+type Duration = Time
 type FrameNr = Int
-type UnboxedSample = Int16
+type DiscreteSample = Int16
 type SampleFunc = Frequency -> FrameNr -> Sample
-type FrameData = (FrameNr, Sample)
-type FrameStream = [FrameData]
+type FrameStream = UArray FrameNr Sample
+
 
 samplingRate = 44100
 realSamplingRate = fromIntegral samplingRate
-maxUnboxedVal = (fromIntegral (maxBound :: UnboxedSample) :: Double) / 2
+maxDiscreteVal = (fromIntegral (maxBound :: DiscreteSample) :: Sample) / 2
 
 
 sinusoid :: SampleFunc
@@ -28,28 +29,38 @@ niceSinusoid freq frame = exp(-5 * time) * sin (time * 2 * pi * freq)
 	where time = fromIntegral frame / realSamplingRate
 
 render :: (FrameNr -> Sample) -> Duration -> FrameStream
-render func dur = [(frame, func frame) | frame <- [1 .. frames]]
+render func dur = array (0, frames)
+	[(frame, func frame) | frame <- range(0, frames)]
 	where frames = ceiling $ realSamplingRate * dur
 
 
-addFrameStreams :: FrameStream -> FrameStream -> FrameStream
-addFrameStreams a b = [(i, frame i a + frame i b) | i <- ix] where
-	aix = map fst a; bix = map fst b; ix = nub $ aix ++ bix
-	frame i f = let e = find (\e -> fst e == i) f in case e of
-		Just (_, sample) -> sample
-		Nothing -> 0
+emptyEmbracing :: FrameStream -> FrameStream -> FrameStream
+emptyEmbracing a1 a2 = array (min3, max3) [(i, 0) | i <- range(min3, max3)]
+	where
+		min3 = min (fst b1) (fst b2); max3 = max (snd b1) (snd b2)
+		b1 = bounds a1; b2 = bounds a2
+
+sumUnboxed :: FrameStream -> FrameStream -> FrameStream
+sumUnboxed a1 a2 = a4 where
+	empty = emptyEmbracing a1 a2
+	a3 = accum (+) empty (assocs a1)
+	a4 = accum (+) a3 (assocs a2)
+
+timeShift :: Time -> FrameStream -> FrameStream
+timeShift shift a1 = ixmap (min2, max2) (\i -> i - shiftFr) a1 where
+	(min1, max1) = bounds a1; min2 = min1 + shiftFr; max2 = max1 + shiftFr
+	shiftFr = round $ shift * realSamplingRate
 
 
-unbox :: FrameStream -> SampleData UnboxedSample
-unbox stream = array (1, length stream) $
-	map (\(frameNr, sample) -> (frameNr, round $ maxUnboxedVal * sample)) stream
+discreteSamples :: FrameStream -> SampleData DiscreteSample
+discreteSamples a = amap (\e -> round $ maxDiscreteVal * e) a
 
 
-audioData :: SampleData UnboxedSample
-audioData = unbox $ addFrameStreams (render (niceSinusoid 100) 0.1)
-	(render (niceSinusoid 100) 0.1)
+audioData :: SampleData DiscreteSample
+audioData = discreteSamples $ sumUnboxed (render (niceSinusoid 100) 4)
+	(timeShift 0.5 $ render (niceSinusoid 100) 0.2)
 
-audio :: Audio UnboxedSample
+audio :: Audio DiscreteSample
 audio = Audio { sampleRate = samplingRate, channelNumber = 1,
 	sampleData = audioData }
 
