@@ -5,11 +5,41 @@ import Data.Array.Unboxed
 import Data.Audio
 import Data.Int
 
-audioData :: SampleData Int16
-audioData = array (1, 100) [(i, fromIntegral i * 100) | i <- [1..100]]
+type Frequency = Float
+type Duration = Float
+type Time = Int
+type SampleT = Int16
+type SampleFunc = Frequency -> Time -> SampleT
 
-audio :: Audio Int16
-audio = Audio { sampleRate = 44100, channelNumber = 1, sampleData = audioData }
+samplingRate = 44100
+maxVal = 2 ^ 16 / 2
+
+
+toReal :: Int -> Float
+toReal x = read (show x)
+
+
+sinusoid :: SampleFunc
+sinusoid freq time = floor $ maxVal * sin(realTime * 2 * pi * freq)
+	where realTime = toReal time / toReal samplingRate
+
+niceSinusoid :: SampleFunc
+niceSinusoid freq time = floor $ maxVal * exp(-5 * realTime) * sin
+	(realTime * 2 * pi * freq)
+	where realTime = toReal time / toReal samplingRate
+
+sample :: (Time -> SampleT) -> Duration -> SampleData SampleT
+sample func dur = array (1, samples) [(time, func time) | time <- [1..samples]]
+	where samples = truncate $ toReal samplingRate * dur
+
+
+audioData :: SampleData SampleT
+audioData = sample (niceSinusoid 100) 10
+
+audio :: Audio SampleT
+audio = Audio { sampleRate = samplingRate, channelNumber = 1,
+	sampleData = audioData }
+
 
 main = do
 	exportFile "wave.wav" audio
