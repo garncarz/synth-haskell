@@ -4,39 +4,52 @@ import Codec.Wav
 import Data.Array.Unboxed
 import Data.Audio
 import Data.Int
+import Data.List
 
-type Frequency = Float
-type Duration = Float
-type Time = Int
-type SampleT = Int16
-type SampleFunc = Frequency -> Time -> SampleT
+type Frequency = Double
+type Duration = Double
+type FrameNr = Int
+type UnboxedSample = Int16
+type SampleFunc = Frequency -> FrameNr -> Sample
+type FrameData = (FrameNr, Sample)
+type FrameStream = [FrameData]
 
 samplingRate = 44100
-maxVal = 2 ^ 16 / 2
-
-
-toReal :: Int -> Float
-toReal x = read (show x)
+realSamplingRate = fromIntegral samplingRate
+maxUnboxedVal = (fromIntegral (maxBound :: UnboxedSample) :: Double) / 2
 
 
 sinusoid :: SampleFunc
-sinusoid freq time = floor $ maxVal * sin(realTime * 2 * pi * freq)
-	where realTime = toReal time / toReal samplingRate
+sinusoid freq frame = sin(time * 2 * pi * freq)
+	where time = fromIntegral frame / realSamplingRate
 
 niceSinusoid :: SampleFunc
-niceSinusoid freq time = floor $ maxVal * exp(-5 * realTime) * sin
-	(realTime * 2 * pi * freq)
-	where realTime = toReal time / toReal samplingRate
+niceSinusoid freq frame = exp(-5 * time) * sin (time * 2 * pi * freq)
+	where time = fromIntegral frame / realSamplingRate
 
-sample :: (Time -> SampleT) -> Duration -> SampleData SampleT
-sample func dur = array (1, samples) [(time, func time) | time <- [1..samples]]
-	where samples = truncate $ toReal samplingRate * dur
+render :: (FrameNr -> Sample) -> Duration -> FrameStream
+render func dur = [(frame, func frame) | frame <- [1 .. frames]]
+	where frames = ceiling $ realSamplingRate * dur
 
 
-audioData :: SampleData SampleT
-audioData = sample (niceSinusoid 100) 10
+addFrameStreams :: FrameStream -> FrameStream -> FrameStream
+addFrameStreams a b = [(i, frame i a + frame i b) | i <- ix] where
+	aix = map fst a; bix = map fst b; ix = nub $ aix ++ bix
+	frame i f = let e = find (\e -> fst e == i) f in case e of
+		Just (_, sample) -> sample
+		Nothing -> 0
 
-audio :: Audio SampleT
+
+unbox :: FrameStream -> SampleData UnboxedSample
+unbox stream = array (1, length stream) $
+	map (\(frameNr, sample) -> (frameNr, round $ maxUnboxedVal * sample)) stream
+
+
+audioData :: SampleData UnboxedSample
+audioData = unbox $ addFrameStreams (render (niceSinusoid 100) 0.1)
+	(render (niceSinusoid 100) 0.1)
+
+audio :: Audio UnboxedSample
 audio = Audio { sampleRate = samplingRate, channelNumber = 1,
 	sampleData = audioData }
 
