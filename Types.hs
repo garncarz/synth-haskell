@@ -15,7 +15,7 @@ type FrameStream = UArray FrameNr Sample
 
 maxVolume = (fromIntegral (maxBound :: DiscreteSample) :: Sample) / 10
 
-samplingRate = 1000
-realSamplingRate = fromIntegral samplingRate
+samplingRate = 1000 :: Int
+realSamplingRate = (fromIntegral samplingRate) :: Double
 
 

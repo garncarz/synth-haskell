@@ -3,6 +3,7 @@ module Midi where
 import Types
 
 import Codec.Midi hiding (Time)
+import Data.List
 
 midi2realNotes :: Track Ticks -> [(Time, Frequency)]
 midi2realNotes track = absoluteNotes where
@@ -23,7 +24,7 @@ absoluteFrequency :: Key -> Frequency
 absoluteFrequency key = 440 * 2 ** ((fromIntegral key - 69) / 12)
 
 
-loadMidi :: String -> IO ()
+loadMidi :: String -> IO [(Time, Frequency)]
 loadMidi filename = do
 	fileContent <- importFile filename
 	let midi = case fileContent of

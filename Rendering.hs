@@ -2,6 +2,9 @@ module Rendering where
 
 import Types
 
+import Data.Audio
+import Data.Array.Unboxed
+
 sinusoid :: SampleFunc
 sinusoid freq frame = sin(time * 2 * pi * freq)
 	where time = fromIntegral frame / realSamplingRate
