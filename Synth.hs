@@ -8,11 +8,12 @@ import Wave
 
 main :: IO ()
 main = do
-	notes <- loadMidi "input.midi"
+	(tones, dur) <- loadMidi "input.midi"
 	let
-		samples = map (\(time, freq) -> timeShift time $
-			render (niceSinusoid freq) 1) notes
-		empty = emptyTrack $ 300 * samplingRate
+		samples = map (\(time, tone) -> timeShift time $
+			render (niceSinusoid $ pitch tone) (duration tone) (volume tone))
+			tones
+		empty = emptyTrack dur
 		finalAudio = foldl1 sumStreams (empty:samples)
 	saveWave "output.wav" finalAudio
 	play finalAudio samplingRate

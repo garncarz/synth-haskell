@@ -6,8 +6,9 @@ import Codec.Wav
 import Data.Array.Unboxed
 import Data.Audio
 
-emptyTrack :: FrameNr -> FrameStream
-emptyTrack len = array (0, len) [(i, 0) | i <- range(0, len)]
+emptyTrack :: Duration -> FrameStream
+emptyTrack dur = array (0, len) [(i, 0) | i <- range(0, len)] where
+	len = round $ dur * realSamplingRate
 
 sumStreams :: FrameStream -> FrameStream -> FrameStream
 sumStreams a1 a2 = accum (+) a1 (assocs a2)
