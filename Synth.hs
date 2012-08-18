@@ -11,8 +11,7 @@ main = do
 	(tones, dur) <- loadMidi "input.midi"
 	let
 		samples = map (\(time, tone) -> timeShift time $
-			render (niceSinusoid $ pitch tone) (duration tone) (volume tone))
-			tones
+			render niceSinusoid tone) tones
 		empty = emptyTrack dur
 		finalAudio = foldl1 sumStreams (empty:samples)
 	saveWave "output.wav" finalAudio

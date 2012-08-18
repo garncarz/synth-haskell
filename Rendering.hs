@@ -6,16 +6,17 @@ import Data.Audio
 import Data.Array.Unboxed
 
 sinusoid :: SampleFunc
-sinusoid freq frame = sin(time * 2 * pi * freq)
+sinusoid freq _ frame = sin(time * 2 * pi * freq)
 	where time = fromIntegral frame / realSamplingRate
 
 niceSinusoid :: SampleFunc
-niceSinusoid freq frame = exp(-5 * time) * sin (time * 2 * pi * freq)
+niceSinusoid freq dur frame = exp(-2 * time / dur) * sin (time * 2 * pi * freq)
 	where time = fromIntegral frame / realSamplingRate
 
 
-render :: (FrameNr -> Sample) -> Duration -> Volume -> FrameStream
-render func dur vol = array (0, frames)
-	[(frame, vol * (func frame)) | frame <- range(0, frames)]
-	where frames = ceiling $ realSamplingRate * dur
+render :: SampleFunc -> Tone -> FrameStream
+render func tone = array (0, frames)
+	[(frame, vol * (func freq dur frame)) | frame <- range(0, frames)]
+	where frames = ceiling $ realSamplingRate * dur;
+		freq = pitch tone; dur = duration tone; vol = volume tone
 

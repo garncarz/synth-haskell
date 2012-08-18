@@ -2,23 +2,35 @@ module Midi where
 
 import Types
 
-import Codec.Midi hiding (Time)
+import Codec.Midi as Midi hiding (Time)
 import Data.List
 
-midi2realNotes :: Int -> Track Ticks -> [(Time, Tone)]
-midi2realNotes tempo track = absoluteNotes where
-	absoluteTimeNotes = makeAbsoluteTimes track 0 tempo
-	notesOn = fst (partition (\(_, m) -> isNoteOn m && velocity m > 0)
-		absoluteTimeNotes)
-	relativeNotes = map (\(time, note) -> (time, key note)) notesOn
-	absoluteNotes = map (\(time, key) -> (time, Tone {
-		pitch = absoluteFrequency key, duration = 1, volume = 1}))
-		relativeNotes
 
-makeAbsoluteTimes :: [(Ticks, Message)] -> FrameNr -> Int -> [(Time, Message)]
-makeAbsoluteTimes [] _ tempo = []
-makeAbsoluteTimes ((time, m):rest) shift tempo = (realShifted, m):rest2 where
-	rest2 = makeAbsoluteTimes rest shifted tempo; shifted = time + shift
+midi2realNotes :: Midi -> Int -> [(Time, Tone)]
+midi2realNotes midi tempo = sortTimed . concat . map filterNotes .
+	map (makeAbsoluteTimes tempo 0)	$ tracks midi
+
+filterNotes :: [(Time, Message)] -> [(Time, Tone)]
+filterNotes [] = []
+filterNotes ((time, msg):rest)
+	| isNoteOn msg && velocity msg > 0 && channel msg /= 9 = (time, Tone {
+		pitch = absoluteFrequency $ key msg,
+		duration = findNextNoteOffTime (key msg) (channel msg) rest - time,
+		volume = fromIntegral (velocity msg) / 128}):filterNotes rest
+	| otherwise = filterNotes rest
+
+findNextNoteOffTime :: Key -> Channel -> [(Time, Message)] -> Time
+findNextNoteOffTime _ _ [] = error "no next NoteOff"
+findNextNoteOffTime key chan ((time, msg):rest)
+	| isNoteOn msg && Midi.key msg == key && channel msg == chan &&
+		velocity msg == 0 = time
+	| isNoteOff msg && Midi.key msg == key && channel msg == chan = time
+	| otherwise = findNextNoteOffTime key chan rest
+
+makeAbsoluteTimes :: Int -> FrameNr -> [(Ticks, Message)] -> [(Time, Message)]
+makeAbsoluteTimes _ _ [] = []
+makeAbsoluteTimes tempo shift ((time, m):rest) = (realShifted, m):rest2 where
+	rest2 = makeAbsoluteTimes tempo shifted rest; shifted = time + shift
 	realShifted = fromIntegral shifted / (fromIntegral tempo) / 3  -- FIXME
 
 absoluteFrequency :: Key -> Frequency
@@ -37,7 +49,7 @@ loadMidi filename = do
 	let
 		tempoMidi (TicksPerBeat tpb) = tpb
 		tempo = tempoMidi (timeDiv midi)
-		notes = sortTimed . concat $ map (midi2realNotes tempo) $ tracks midi
+		notes = midi2realNotes midi tempo
 		songDuration = (+) 2 . fst $ last notes
 	return (notes, songDuration)
 
