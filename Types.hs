@@ -10,7 +10,7 @@ type Duration = Time
 type Volume = Double
 type FrameNr = Int
 type DiscreteSample = Int16
-type SampleFunc = Frequency -> Duration -> FrameNr -> Sample
+type SampleFunc = Frequency -> Duration -> Time -> Sample
 type FrameStream = UArray FrameNr Sample
 
 data Tone = Tone {
