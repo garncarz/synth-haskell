@@ -5,8 +5,13 @@ import Data.Audio
 import Data.Int
 
 type Frequency = Double
+
+-- | Time in seconds, meant mainly for a time positioning
 type Time = Double
+
+-- | Time in seconds
 type Duration = Time
+
 type Volume = Double
 type FrameNr = Int
 type DiscreteSample = Int16

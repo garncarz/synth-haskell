@@ -1,3 +1,13 @@
+{-|
+Module for loading a content of a MIDI file as timed absolute frequency tones.
+
+TODO:
+
+  - Adapt to variable tempo during a song. MIDI change tempo messages must be
+    taken into account.
+  
+  - Fix computing a duration of a song.
+-}
 module Midi where
 
 import Types
@@ -5,12 +15,15 @@ import Types
 import Codec.Midi as Midi hiding (Time)
 import Data.List
 
-
-midi2realNotes :: Midi -> Int -> [(Time, Tone)]
+midi2realNotes :: Midi -- ^ Content of a MIDI file
+	-> Int -- ^ Tempo of music
+	-> [(Time, Tone)] -- ^ Timed absolute frequency tones
 midi2realNotes midi tempo = sortTimed . concat . map filterNotes .
 	map (makeAbsoluteTimes tempo 0)	$ tracks midi
 
-filterNotes :: [(Time, Message)] -> [(Time, Tone)]
+-- | Extracts non-percussive unmuted tones.
+filterNotes :: [(Time, Message)] -- ^ Timed MIDI messages
+	-> [(Time, Tone)] -- ^ Timed absolute frequency tones
 filterNotes [] = []
 filterNotes ((time, msg):rest)
 	| isNoteOn msg && velocity msg > 0 && channel msg /= 9 = (time, Tone {
@@ -19,6 +32,7 @@ filterNotes ((time, msg):rest)
 		volume = fromIntegral (velocity msg) / 128}):filterNotes rest
 	| otherwise = filterNotes rest
 
+-- | Finds when a given note is muted.
 findNextNoteOffTime :: Key -> Channel -> [(Time, Message)] -> Time
 findNextNoteOffTime _ _ [] = error "no next NoteOff"
 findNextNoteOffTime key chan ((time, msg):rest)
@@ -27,20 +41,30 @@ findNextNoteOffTime key chan ((time, msg):rest)
 	| isNoteOff msg && Midi.key msg == key && channel msg == chan = time
 	| otherwise = findNextNoteOffTime key chan rest
 
-makeAbsoluteTimes :: Int -> FrameNr -> [(Ticks, Message)] -> [(Time, Message)]
+
+-- | TODO: Hide Ticks, determine /variable/ tempo from messages.
+makeAbsoluteTimes :: Int -- ^ Tempo of music
+	-> Ticks -- ^ How many MIDI time units to shift
+	-> [(Ticks, Message)] -- ^ MIDI timed MIDI messages
+	-> [(Time, Message)] -- ^ Shifted real timed MIDI messages
 makeAbsoluteTimes _ _ [] = []
 makeAbsoluteTimes tempo shift ((time, m):rest) = (realShifted, m):rest2 where
 	rest2 = makeAbsoluteTimes tempo shifted rest; shifted = time + shift
 	realShifted = fromIntegral shifted / (fromIntegral tempo) / 3  -- FIXME
 
-absoluteFrequency :: Key -> Frequency
+absoluteFrequency :: Key -- ^ 69 (A in MIDI)
+	-> Frequency -- ^ 440\.0 (Hz)
 absoluteFrequency key = 440 * 2 ** ((fromIntegral key - 69) / 12)
 
+-- | Sorts by the first element of a couple.
 sortTimed :: Ord a => [(a, b)] -> [(a, b)]
 sortTimed = sortBy (\(t1, _) (t2, _) -> compare t1 t2)
 
 
-loadMidi :: String -> IO ([(Time, Tone)], Duration)
+-- | TODO: Fix duration.
+loadMidi :: String  -- ^ File name
+	-> IO ([(Time, Tone)], Duration) -- ^ Timed absolute frequency tones
+		-- and a duration of the whole song
 loadMidi filename = do
 	fileContent <- importFile filename
 	let midi = case fileContent of
