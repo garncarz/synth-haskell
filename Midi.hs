@@ -13,7 +13,10 @@ module Midi where
 import Types
 
 import Codec.Midi as Midi hiding (Time)
-import Data.List
+import Data.IntervalMap.Strict (IntervalMap, Interval(..), insert, singleton,
+	containing)
+import Data.List hiding (insert, lookup)
+import Prelude hiding (lookup)
 
 midi2realNotes :: Midi -- ^ Content of a MIDI file
 	-> Int -- ^ Tempo of music
@@ -51,6 +54,41 @@ makeAbsoluteTimes _ _ [] = []
 makeAbsoluteTimes tempo shift ((time, m):rest) = (realShifted, m):rest2 where
 	rest2 = makeAbsoluteTimes tempo shifted rest; shifted = time + shift
 	realShifted = fromIntegral shifted / (fromIntegral tempo) / 3  -- FIXME
+
+
+tempoIntervals :: [(Ticks, Message)] -> IntervalMap Time Tempo
+tempoIntervals track = pileUp aether $ map fromNowOnwards $ pureList track where
+	pureList = nub . sortTimed . crystalize . filterTempos
+	
+	filterTempos = filter (\(_, msg) -> isTempo msg)
+	isTempo (TempoChange _) = True; isTempo _ = False
+	
+	crystalize = map (\(tick, msg) -> (tick, tempo msg))
+	tempo (TempoChange t) = t
+	
+	fromNowOnwards = \(tick, tempo) -> (IntervalCO (fromIntegral tick) infinity,
+		tempo)
+	infinity = 1 / 0
+	
+	aether = singleton infiniteInterval defaultTempo
+	infiniteInterval = OpenInterval (-infinity) infinity
+	
+	pileUp = foldl (\pile (interval, tempo) -> insert interval tempo pile)
+
+
+tempoAt :: Time -> IntervalMap Time Tempo -> Tempo
+tempoAt time tempos = snd . last $ containing tempos time
+
+test = do
+	fileContent <- importFile "input.midi"
+	let midi = case fileContent of
+		Left err -> error $ "o-o " ++ err
+		Right midi -> midi
+	let intervals = tempoIntervals (concat $ tracks midi)
+	print intervals
+	print $ tempoAt (-10) intervals
+	print $ tempoAt 10 intervals
+
 
 absoluteFrequency :: Key -- ^ 69 (A in MIDI)
 	-> Frequency -- ^ 440\.0 (Hz)

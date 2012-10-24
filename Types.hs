@@ -1,5 +1,6 @@
 module Types where
 
+import Codec.Midi hiding (Time)
 import Data.Array.Unboxed
 import Data.Audio
 import Data.Int
@@ -22,6 +23,8 @@ data Tone = Tone {
 	pitch :: Frequency,
 	duration :: Duration,
 	volume :: Volume} deriving (Eq, Show, Read)
+
+defaultTempo = 120 :: Tempo
 
 maxVolume = (fromIntegral (maxBound :: DiscreteSample) :: Sample) / 10
 
