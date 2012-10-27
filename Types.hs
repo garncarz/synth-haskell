@@ -24,10 +24,8 @@ data Tone = Tone {
 	duration :: Duration,
 	volume :: Volume} deriving (Eq, Show, Read)
 
-defaultTempo = 120 :: Tempo
-
 maxVolume = (fromIntegral (maxBound :: DiscreteSample) :: Sample) / 10
 
 samplingRate = 11000 :: Int
-realSamplingRate = (fromIntegral samplingRate) :: Double
+realSamplingRate = fromIntegral samplingRate :: Double
 

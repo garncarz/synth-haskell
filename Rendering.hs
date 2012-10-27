@@ -20,12 +20,12 @@ triangle freq _ time = (\x -> 2 * x - 1) . abs .
 	(\x ->  x - (fromIntegral . floor) x) $ freq * time
 
 nice :: SampleFunc -> SampleFunc
-nice func freq dur time = exp (-2 * time / dur) * (func freq dur time)
+nice func freq dur time = exp (-2 * time / dur) * func freq dur time
 
 
 render :: SampleFunc -> Tone -> FrameStream
 render func tone = array (0, frames)
-	[(frame, vol * (func freq dur $ time frame)) | frame <- range(0, frames)]
+	[(frame, vol * func freq dur (time frame)) | frame <- range(0, frames)]
 	where
 		frames = ceiling $ realSamplingRate * dur
 		freq = pitch tone; dur = duration tone; vol = volume tone

@@ -29,5 +29,6 @@ main = do
 		empty = emptyTrack dur
 		finalAudio = foldl1 sumStreams (empty:samples)
 	saveWave output finalAudio
+	
 	play finalAudio samplingRate
 

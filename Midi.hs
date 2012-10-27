@@ -10,7 +10,7 @@ import Codec.Midi as Midi hiding (Time)
 midi2realNotes :: Midi -- ^ Content of a MIDI file
 	-> [(Time, Tone)] -- ^ Timed absolute frequency tones
 midi2realNotes midi = filterNotes realTimedTrack where
-	track = (tracks $ toSingleTrack midi) !! 0
+	track = head (tracks $ toSingleTrack midi)
 	realTimedTrack = toRealTime (timeDiv midi) $ toAbsTime track
 
 -- | Extracts non-percussive unmuted tones.
@@ -40,7 +40,7 @@ absoluteFrequency key = 440 * 2 ** ((fromIntegral key - 69) / 12)
 songDuration :: [(Time, Tone)]
 	-> Duration
 songDuration notes = (+) 1 $ maximum $ map noteEnding notes where
-	noteEnding note = (fst note) + (duration $ snd note)
+	noteEnding note = fst note + duration (snd note)
 
 
 loadMidi :: String  -- ^ File name
