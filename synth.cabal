@@ -51,6 +51,5 @@ executable synth
   other-modules:       Midi Play Rendering Types Wave
   
   -- Other library packages from which modules are imported.
-  build-depends:       base >= 4.6, HCodecs >= 0.2, array >= 0.4, sox >= 0.2,
-                       IntervalMap
+  build-depends:       base >= 4.6, HCodecs >= 0.2, array >= 0.4, sox >= 0.2
   
