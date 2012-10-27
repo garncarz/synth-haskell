@@ -1,12 +1,5 @@
 {-|
 Module for loading a content of a MIDI file as timed absolute frequency tones.
-
-TODO:
-
-  - Adapt to variable tempo during a song. MIDI change tempo messages must be
-    taken into account.
-  
-  - Fix computing a duration of a song.
 -}
 module Midi where
 
@@ -50,7 +43,6 @@ songDuration notes = (+) 1 $ maximum $ map noteEnding notes where
 	noteEnding note = (fst note) + (duration $ snd note)
 
 
--- | TODO: Fix duration.
 loadMidi :: String  -- ^ File name
 	-> IO ([(Time, Tone)], Duration) -- ^ Timed absolute frequency tones
 		-- and a duration of the whole song

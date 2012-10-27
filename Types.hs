@@ -28,6 +28,6 @@ defaultTempo = 120 :: Tempo
 
 maxVolume = (fromIntegral (maxBound :: DiscreteSample) :: Sample) / 10
 
-samplingRate = 4000 :: Int
+samplingRate = 11000 :: Int
 realSamplingRate = (fromIntegral samplingRate) :: Double
 
