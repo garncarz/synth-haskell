@@ -17,12 +17,14 @@ type Volume = Double
 type FrameNr = Int
 type DiscreteSample = Int16
 type SampleFunc = Frequency -> Duration -> Time -> Sample
+type VolumeFunc = Duration -> Time -> Sample
 type FrameStream = UArray FrameNr Sample
 
 data Tone = Tone {
 	pitch :: Frequency,
 	duration :: Duration,
 	volume :: Volume,
+	instrument :: Preset,
 	channel :: Channel } deriving (Eq, Show, Read)
 
 maxVolume = (fromIntegral (maxBound :: DiscreteSample) :: Sample) / 10

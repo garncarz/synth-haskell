@@ -21,27 +21,36 @@ triangle :: SampleFunc
 triangle freq _ time = (\x -> 2 * x - 1) . abs .
 	(\x ->  x - (fromIntegral . floor) x) $ freq * time
 
--- TODO zkusit druhý kvadrant sinusoidy pro sestup
-fadeOut :: Time -> Time -> Sample
-fadeOut dur time = if fromFading < 0 then 1 else fading where
+
+sawVol :: VolumeFunc
+sawVol _ time = (\x -> x - (fromIntegral . floor) x) $ time * 10
+
+endLinefadeOut :: VolumeFunc
+endLinefadeOut dur time = if fromFading < 0 then 1 else fading where
 	fading = 1 - (fromFading / fadingTime)
 	fromFading = time - ((1 - fadingPart) * dur)
 	fadingTime = fadingPart * dur
 	fadingPart = 0.2
 
+expFadeOut :: VolumeFunc
+expFadeOut dur time = exp $ log 0.05 * time / dur
+
+cosFadeOut :: VolumeFunc
+cosFadeOut dur time = cos $ acos 0 * time / dur
+
+
 nice :: SampleFunc -> SampleFunc
-nice func freq dur time = exp (-2 * time / dur) * func freq dur time *
-	fadeOut dur time
+nice func freq dur time = func freq dur time * cosFadeOut dur time
 
 
 instrumentFunc :: Tone -> SampleFunc
-instrumentFunc tone = renderingFuncs !! (channel tone `mod`
+instrumentFunc tone = renderingFuncs !! (instrument tone `mod`
 	length renderingFuncs)
 
 
 render :: Tone -> FrameStream
 render tone = array (0, frames)
-	[(frame, vol * func freq dur (time frame)) | frame <- range(0, frames)]
+	[(frame, vol * nice func freq dur (time frame)) | frame <- range(0, frames)]
 	where
 		frames = ceiling $ realSamplingRate * dur
 		freq = pitch tone; dur = duration tone; vol = volume tone
