@@ -3,7 +3,8 @@ Module for loading a content of a MIDI file as timed absolute frequency tones.
 -}
 module Midi where
 
-import Types
+import Types hiding (channel)
+import qualified Types
 
 import Codec.Midi as Midi hiding (Time)
 
@@ -21,7 +22,8 @@ filterNotes ((time, msg):rest)
 	| isNoteOn msg && velocity msg > 0 && channel msg /= 9 = (time, Tone {
 		pitch = absoluteFrequency $ key msg,
 		duration = findNextNoteOffTime (key msg) (channel msg) rest - time,
-		volume = fromIntegral (velocity msg) / 128}):filterNotes rest
+		volume = fromIntegral (velocity msg) / 128,
+		Types.channel = channel msg }) : filterNotes rest
 	| otherwise = filterNotes rest
 
 -- | Finds when a given note stops.

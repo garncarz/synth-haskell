@@ -9,14 +9,15 @@ import Wave
 
 import Control.Monad
 import System.Console.CmdArgs
+import System.FilePath
 
-data Args = Args {input :: String, output :: String, play :: Bool }
+data Args = Args {input :: String, outputArg :: String, playArg :: Bool}
 	deriving (Show, Data, Typeable)
 
 argsDefs = Args {
-	input = def &= typ "INPUT" &= argPos 0 &= opt "input.midi",
-	output = def &= typ "OUTPUT" &= argPos 1 &= opt "output.wav",
-	play = False &= typ "BOOL" }
+	input = def &= typ "INPUT" &= argPos 0,
+	outputArg = def &= typ "OUTPUT" &= argPos 1 &= opt "",
+	playArg = False &= typ "BOOL" }
 	&= program "synth"
 
 
@@ -29,12 +30,13 @@ main = do
 		" tones."
 	
 	let
-		samples = map (\(time, tone) -> timeShift time $
-			render (nice sine) tone) tones
+		samples = map (\(time, tone) -> timeShift time $ render tone) tones
 		empty = emptyTrack dur
 		finalAudio = foldl1 sumStreams (empty:samples)
+		output = if outputArg /= "" then outputArg else
+			replaceExtension input "wav"
 	saveWave output finalAudio
 	putStrLn $ "WAVE file " ++ output ++ " saved."
 	
-	when play $ Play.play finalAudio samplingRate
+	when playArg $ play finalAudio samplingRate
 

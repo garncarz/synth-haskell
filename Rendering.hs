@@ -5,6 +5,8 @@ import Types
 import Data.Audio
 import Data.Array.Unboxed
 
+renderingFuncs = [sine, saw, square, triangle] :: [SampleFunc]
+
 sine :: SampleFunc
 sine freq _ time = sin $ time * 2 * pi * freq
 
@@ -20,8 +22,8 @@ triangle freq _ time = (\x -> 2 * x - 1) . abs .
 	(\x ->  x - (fromIntegral . floor) x) $ freq * time
 
 -- TODO zkusit druhý kvadrant sinusoidy pro sestup
-fadeOutVol :: Time -> Time -> Sample
-fadeOutVol dur time = if fromFading < 0 then 1 else fading where
+fadeOut :: Time -> Time -> Sample
+fadeOut dur time = if fromFading < 0 then 1 else fading where
 	fading = 1 - (fromFading / fadingTime)
 	fromFading = time - ((1 - fadingPart) * dur)
 	fadingTime = fadingPart * dur
@@ -29,14 +31,20 @@ fadeOutVol dur time = if fromFading < 0 then 1 else fading where
 
 nice :: SampleFunc -> SampleFunc
 nice func freq dur time = exp (-2 * time / dur) * func freq dur time *
-	fadeOutVol dur time
+	fadeOut dur time
 
 
-render :: SampleFunc -> Tone -> FrameStream
-render func tone = array (0, frames)
+instrumentFunc :: Tone -> SampleFunc
+instrumentFunc tone = renderingFuncs !! (channel tone `mod`
+	length renderingFuncs)
+
+
+render :: Tone -> FrameStream
+render tone = array (0, frames)
 	[(frame, vol * func freq dur (time frame)) | frame <- range(0, frames)]
 	where
 		frames = ceiling $ realSamplingRate * dur
 		freq = pitch tone; dur = duration tone; vol = volume tone
 		time frame = fromIntegral frame / realSamplingRate
+		func = instrumentFunc tone
 

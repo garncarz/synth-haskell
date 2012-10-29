@@ -22,10 +22,10 @@ type FrameStream = UArray FrameNr Sample
 data Tone = Tone {
 	pitch :: Frequency,
 	duration :: Duration,
-	volume :: Volume} deriving (Eq, Show, Read)
+	volume :: Volume,
+	channel :: Channel } deriving (Eq, Show, Read)
 
 maxVolume = (fromIntegral (maxBound :: DiscreteSample) :: Sample) / 10
 
 samplingRate = 11000 :: Int
 realSamplingRate = fromIntegral samplingRate :: Double
-

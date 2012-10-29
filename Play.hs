@@ -15,7 +15,7 @@ simpleData :: FrameStream -> [Int16]
 simpleData stream = map (\(_, sample) -> round $ maxVolume * sample)
 	(assocs stream)
 
-play :: FrameStream -> Int -> IO () -- FIXME Int
+play :: FrameStream -> Int -> IO ()
 play audio samplingRate = do
 	Play.simple SignalList.put Option.none samplingRate (simpleData audio)
 		`catch` \err -> do print (err :: IOException); exitFailure
