@@ -52,5 +52,6 @@ executable synth
   
   -- Other library packages from which modules are imported.
   build-depends:       base >= 4.6, HCodecs >= 0.2, array >= 0.4, sox >= 0.2,
-                       cmdargs >= 0.10, filepath >= 1.1, IntervalMap >= 0.2
+                       cmdargs >= 0.10, filepath >= 1.1, IntervalMap >= 0.2,
+                       MissingH >= 1.1
   

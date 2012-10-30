@@ -10,6 +10,7 @@ import Wave
 import Control.Monad
 import System.Console.CmdArgs
 import System.FilePath
+import System.Time.Utils
 
 data Args = Args {input :: String, outputArg :: String, playArg :: Bool}
 	deriving (Show, Data, Typeable)
@@ -26,8 +27,10 @@ main = do
 	Args{..} <- cmdArgs argsDefs
 
 	(tones, dur) <- loadMidi input
-	putStrLn $ "MIDI file " ++ input ++ " loaded, " ++ show (length tones) ++
-		" tones."
+	putStrLn $ "MIDI file " ++ input ++ " loaded, "
+		++ (renderSecs . round) dur ++ " playing time, "
+		++ (renderSecs . round . totalDuration) tones ++ " total time for "
+		++ (show . length) tones ++ " tones."
 	
 	let
 		samples = map (\(time, tone) -> timeShift time $ render tone) tones

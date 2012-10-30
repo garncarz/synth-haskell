@@ -70,10 +70,14 @@ absoluteFrequency :: Key -- ^ 69 (A in MIDI)
 	-> Frequency -- ^ 440\.0 (Hz)
 absoluteFrequency key = 440 * 2 ** ((fromIntegral key - 69) / 12)
 
+
 songDuration :: [(Time, Tone)]
 	-> Duration
 songDuration notes = (+) 1 $ maximum $ map noteEnding notes where
 	noteEnding note = fst note + duration (snd note)
+
+totalDuration :: [(Time, Tone)] -> Duration
+totalDuration = sum . map (duration . snd)
 
 
 loadMidi :: String  -- ^ File name
