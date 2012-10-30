@@ -31,8 +31,7 @@ main = do
 	
 	let
 		samples = map (\(time, tone) -> timeShift time $ render tone) tones
-		empty = emptyTrack dur
-		finalAudio = foldl1 sumStreams (empty:samples)
+		finalAudio = sumSamples samples dur
 		output = if outputArg /= "" then outputArg else
 			replaceExtension input "wav"
 	saveWave output finalAudio

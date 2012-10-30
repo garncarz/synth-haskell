@@ -6,12 +6,9 @@ import Codec.Wav
 import Data.Array.Unboxed
 import Data.Audio
 
-emptyTrack :: Duration -> FrameStream
-emptyTrack dur = array (0, len) [(i, 0) | i <- range(0, len)] where
-	len = round $ dur * realSamplingRate
-
-sumStreams :: FrameStream -> FrameStream -> FrameStream
-sumStreams a1 a2 = accum (+) a1 (assocs a2)
+sumSamples :: [FrameStream] -> Duration -> FrameStream
+sumSamples samples dur = accumArray (+) 0 (0, len) (concatMap assocs samples)
+	where len = round $ dur * realSamplingRate
 
 timeShift :: Time -> FrameStream -> FrameStream
 timeShift shift a1 = ixmap (min2, max2) (\i -> i - shiftFr) a1 where

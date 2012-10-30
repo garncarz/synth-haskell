@@ -2,7 +2,6 @@ module Types where
 
 import Codec.Midi hiding (Time)
 import Data.Array.Unboxed
-import Data.Audio
 import Data.Int
 
 type Frequency = Double
@@ -15,6 +14,7 @@ type Duration = Time
 
 type Volume = Double
 type FrameNr = Int
+type Sample = Double
 type DiscreteSample = Int16
 type SampleFunc = Frequency -> Duration -> Time -> Sample
 type VolumeFunc = Duration -> Time -> Sample
@@ -29,5 +29,5 @@ data Tone = Tone {
 
 maxVolume = (fromIntegral (maxBound :: DiscreteSample) :: Sample) / 10
 
-samplingRate = 11000 :: Int
+samplingRate = 44000 :: Int
 realSamplingRate = fromIntegral samplingRate :: Double

@@ -2,7 +2,6 @@ module Rendering where
 
 import Types
 
-import Data.Audio
 import Data.Array.Unboxed
 
 renderingFuncs = [sine, saw, square, triangle] :: [SampleFunc]
@@ -72,7 +71,7 @@ render tone = array (0, frames)
 		frames = ceiling $ realSamplingRate * dur
 		freq = pitch tone; dur = duration tone; vol = volume tone
 		time frame = fromIntegral frame / realSamplingRate
-		-- func = instrumentFunc tone
-		func = sine
+		func = instrumentFunc tone
+		-- func = sine
 		vols = instrumentHarmonics tone
 
