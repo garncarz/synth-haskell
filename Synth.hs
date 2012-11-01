@@ -4,13 +4,14 @@ module Synth where
 import Midi
 import Play
 import Rendering
-import Types
 import Wave
+
+import Types
+import Instruments
 
 import Control.Monad
 import System.Console.CmdArgs
 import System.FilePath
-import System.Time.Utils
 
 data Args = Args {input :: String, outputArg :: String, playArg :: Bool}
 	deriving (Show, Data, Typeable)
@@ -20,6 +21,7 @@ argsDefs = Args {
 	outputArg = def &= typ "OUTPUT" &= argPos 1 &= opt "",
 	playArg = False &= typ "BOOL" }
 	&= program "synth"
+	&= verbosity
 
 
 main :: IO ()
@@ -27,18 +29,12 @@ main = do
 	Args{..} <- cmdArgs argsDefs
 
 	(tones, dur) <- loadMidi input
-	putStrLn $ "MIDI file " ++ input ++ " loaded, "
-		++ (renderSecs . round) dur ++ " playing time, "
-		++ (renderSecs . round . totalDuration) tones ++ " total time for "
-		++ (show . length) tones ++ " tones."
-	
 	let
 		samples = map (\(time, tone) -> timeShift time $ render tone) tones
 		finalAudio = sumSamples samples dur
 		output = if outputArg /= "" then outputArg else
 			replaceExtension input "wav"
 	saveWave output finalAudio
-	putStrLn $ "WAVE file " ++ output ++ " saved."
 	
-	when playArg $ play finalAudio samplingRate
+	when playArg $ play finalAudio
 

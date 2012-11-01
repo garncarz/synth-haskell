@@ -5,6 +5,7 @@ import Types
 import Codec.Wav
 import Data.Array.Unboxed
 import Data.Audio
+import System.Console.CmdArgs.Verbosity
 
 sumSamples :: [FrameStream] -> Duration -> FrameStream
 sumSamples samples dur = accumArray (+) 0 (0, len) (concatMap assocs samples)
@@ -23,5 +24,7 @@ audio audioData = Audio { sampleRate = samplingRate, channelNumber = 1,
 	sampleData = discreteSamples audioData }
 
 saveWave :: String -> FrameStream -> IO ()
-saveWave filename stream = exportFile filename (audio stream)
+saveWave filename stream = do
+	exportFile filename (audio stream)
+	whenNormal $ putStrLn $ "WAVE file " ++ filename ++ " saved."
 
