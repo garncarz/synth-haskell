@@ -66,7 +66,7 @@ instruments = [
 	Instrument { name = "exotic drums",
 		isPreset = between 113 119,
 		sampler = simple [-1, -0.15, 0.6] },
-	defaultInstrument { name = "crazy", isPreset = (>) 119 }
+	defaultInstrument { name = "crazy", isPreset = (<) 119 }
 	]
 
 defaultInstrument = head instruments :: Instrument
