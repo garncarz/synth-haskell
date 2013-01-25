@@ -45,13 +45,42 @@ cabal-version:       >= 1.8
 executable synth
   -- .hs or .lhs file containing the Main module.
   main-is:             Synth.hs
-  ghc-options:         -main-is Synth -O3
+  ghc-options:         -main-is Synth -O3 -fhpc
 
   -- Modules included in this executable, other than Main.
-  other-modules:       Instruments Midi Play Rendering RenderingFuncs Types Wave
+  other-modules:
+                       Instruments
+                       Midi
+                       Play
+                       Rendering
+                       RenderingFuncs
+                       Types
+                       Wave
   
   -- Other library packages from which modules are imported.
-  build-depends:       base >= 4.6, HCodecs >= 0.2, array >= 0.4, sox >= 0.2,
-                       cmdargs >= 0.10, filepath >= 1.1, IntervalMap >= 0.2,
-                       MissingH >= 1.1
-  
+  build-depends:       base,
+                       array,
+                       cmdargs,
+                       HCodecs,
+                       filepath,
+                       IntervalMap,
+                       MissingH,
+                       sox
+
+test-suite synth-test
+  type:                exitcode-stdio-1.0
+  main-is:             MidiTest.hs
+  build-depends:       base,
+                       array,
+                       cmdargs,
+                       HCodecs,
+                       HUnit,
+                       filepath,
+                       IntervalMap,
+                       MissingH,
+                       QuickCheck,
+                       sox,
+                       test-framework,
+                       test-framework-hunit,
+                       test-framework-quickcheck
+

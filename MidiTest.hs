@@ -3,6 +3,10 @@ import Midi
 import Test.HUnit
 import Test.QuickCheck
 
+import Test.Framework
+import Test.Framework.Providers.HUnit
+import Test.Framework.Providers.QuickCheck
+
 newtype Key = Key Int deriving (Show)
 
 instance Arbitrary Key where
@@ -16,4 +20,12 @@ prop_absoluteFrequency_ord (Key key1) (Key key2) = compare key1 key2 == compare
 test_absoluteFrequency_vals = do
 	assertEqual "A4" 440 (absoluteFrequency 69)
 	assertBool "C4" $ almostEq 261.63 (absoluteFrequency 60)
+
+
+main = defaultMain tests
+
+tests = [
+	testProperty "absoluteFrequency ordering" prop_absoluteFrequency_ord,
+	testCase "some absoluteFrequency values" test_absoluteFrequency_vals
+	]
 
