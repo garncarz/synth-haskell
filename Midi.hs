@@ -81,11 +81,14 @@ songDuration notes = (+) 1 $ maximum $ map noteEnding notes where
 totalDuration :: [(Time, Tone)] -> Duration
 totalDuration = sum . map (duration . snd)
 
-uniqueTones :: [(Time, Tone)] -> Int
-uniqueTones = length . nub . map snd
+uniqueTones :: [(Time, Tone)] -> [Tone]
+uniqueTones = nub . map snd
+
+uniqueTonesCount :: [(Time, Tone)] -> Int
+uniqueTonesCount = length . uniqueTones
 
 uniqueTonesDuration :: [(Time, Tone)] -> Duration
-uniqueTonesDuration = sum . map duration . nub . map snd
+uniqueTonesDuration = sum . map duration . uniqueTones
 
 
 loadMidi :: String  -- ^ File name
@@ -105,7 +108,7 @@ loadMidi filename = do
 		++ showTime dur ++ " playing time, "
 		++ (showTime . totalDuration) tones ++ " total time for "
 		++ (show . length) tones ++ " tones ("
-		++ (show . uniqueTones) tones ++ " unique, "
+		++ (show . uniqueTonesCount) tones ++ " unique, "
 		++ (showTime . uniqueTonesDuration) tones ++ ")."
 	
 	return (tones, dur)

@@ -1,22 +1,20 @@
 module Play where
 
 import Types
+import Wave
 
 import Control.Exception
-import Data.Array.Unboxed
+import qualified Data.Vector.Unboxed as V
 import Prelude hiding (catch)
 import Sound.Sox.Play as Play
 import Sound.Sox.Signal.List as SignalList
 import Sound.Sox.Option.Format as Option
 import System.Exit
 
-simpleData :: FrameStream -> [DiscreteSample]
-simpleData stream = map (\(_, sample) -> round $ maxVolume * sample)
-	(assocs stream)
-
 play :: FrameStream -> IO ()
 play audio = do
 	Play.simple SignalList.put Option.none samplingRate (simpleData audio)
 		`catch` \err -> do print (err :: IOException); exitFailure
 	return ()
+	where simpleData stream = V.toList (discreteSamples stream)
 

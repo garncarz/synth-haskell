@@ -6,8 +6,8 @@ module Types (Time, Preset,
 	maxVolume, samplingRate, realSamplingRate) where
 
 import Codec.Midi
-import Data.Array.Unboxed
 import Data.Int
+import Data.Vector.Unboxed
 
 type Frequency = Double
 type Duration = Time
@@ -17,7 +17,7 @@ type Sample = Double
 type DiscreteSample = Int16
 type SampleFunc = Frequency -> Duration -> Time -> Sample
 type VolumeFunc = Duration -> Time -> Sample
-type FrameStream = UArray FrameNr Sample
+type FrameStream = (FrameNr, Vector Sample)
 
 data Instrument = Instrument {
 	name :: String,

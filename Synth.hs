@@ -1,17 +1,17 @@
 {-# LANGUAGE DeriveDataTypeable, RecordWildCards #-}
 module Synth where
 
+import Instruments
 import Midi
 import Play
 import Rendering
+import Types
 import Wave
 
-import Types
-import Instruments
-
 import Control.Monad
+import Data.Maybe
 import System.Console.CmdArgs
-import System.FilePath
+import qualified System.FilePath as Path
 
 data Args = Args {input :: String, outputArg :: String, playArg :: Bool}
 	deriving (Show, Data, Typeable)
@@ -30,10 +30,12 @@ main = do
 
 	(tones, dur) <- loadMidi input
 	let
-		samples = map (\(time, tone) -> timeShift time $ render tone) tones
-		finalAudio = sumSamples samples dur
+		toneStreams = map (\tone -> (tone, render tone)) $ uniqueTones tones
+		findStream tone = fromJust $ lookup tone toneStreams
+		streams = map (\(time, tone) -> timeShift time $ findStream tone) tones
+		finalAudio = sumStreams streams dur
 		output = if outputArg /= "" then outputArg else
-			replaceExtension input "wav"
+			Path.replaceExtension input "wav"
 	saveWave output finalAudio
 	
 	when playArg $ play finalAudio
