@@ -23,20 +23,24 @@ argsDefs = Args {
 	&= program "synth"
 	&= verbosity
 
-
-main :: IO ()
-main = do
-	Args{..} <- cmdArgs argsDefs
-
+process :: String -> String -> IO FrameStream
+process input output = do
 	(tones, dur) <- loadMidi input
 	let
 		toneStreams = map (\tone -> (tone, render tone)) $ uniqueTones tones
 		findStream tone = fromJust $ lookup tone toneStreams
 		streams = map (\(time, tone) -> timeShift time $ findStream tone) tones
 		finalAudio = sumStreams streams dur
-		output = if outputArg /= "" then outputArg else
-			Path.replaceExtension input "wav"
 	saveWave output finalAudio
+	return finalAudio
+
+main :: IO ()
+main = do
+	Args{..} <- cmdArgs argsDefs
+	
+	let output = if outputArg /= "" then outputArg
+		else Path.replaceExtension input "wav"
+	finalAudio <- process input output
 	
 	when playArg $ play finalAudio
 

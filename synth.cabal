@@ -61,7 +61,7 @@ executable synth
   build-depends:       base,
                        array,
                        cmdargs,
-                       HCodecs,
+                       HCodecs >= 0.2.2,
                        filepath,
                        IntervalMap,
                        MissingH,
@@ -70,17 +70,19 @@ executable synth
 
 test-suite synth-test
   type:                exitcode-stdio-1.0
-  main-is:             MidiTest.hs
+  main-is:             Tests.hs
   build-depends:       base,
                        array,
                        cmdargs,
-                       HCodecs,
-                       HUnit,
+                       HCodecs >= 0.2.2,
                        filepath,
                        IntervalMap,
                        MissingH,
-                       QuickCheck,
                        sox,
+                       vector,
+                       
+                       HUnit,
+                       QuickCheck,
                        test-framework,
                        test-framework-hunit,
                        test-framework-quickcheck

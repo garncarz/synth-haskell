@@ -1,3 +1,5 @@
+module MidiTest (testsMidi) where
+
 import Midi
 
 import Test.HUnit
@@ -22,9 +24,7 @@ test_absoluteFrequency_vals = do
 	assertBool "C4" $ almostEq 261.63 (absoluteFrequency 60)
 
 
-main = defaultMain tests
-
-tests = [
+testsMidi = testGroup "MIDI tests" [
 	testProperty "absoluteFrequency ordering" prop_absoluteFrequency_ord,
 	testCase "some absoluteFrequency values" test_absoluteFrequency_vals
 	]

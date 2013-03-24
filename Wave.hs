@@ -16,6 +16,8 @@ addStream (0, base) (start, added) = (0, V.concat [pre, sum, post]) where
 	venue = V.slice start (end - start) base
 	post = V.slice end (V.length base - end) base
 	sum = V.zipWith (+) venue added
+addStream (baseStart, _) _
+	| baseStart > 0 = error "Cannot add to (> 0, anything)"
 
 sumStreams :: [FrameStream] -> Duration -> FrameStream
 sumStreams streams dur = foldl addStream emptyStream streams where
@@ -26,7 +28,7 @@ timeShift :: Time -> FrameStream -> FrameStream
 timeShift shift (startFrame, samples) = (startFrame + shiftFr, samples)
 	where shiftFr = round $ shift * realSamplingRate
 
-discreteSamples :: FrameStream -> V.Vector DiscreteSample
+discreteSamples :: FrameStream -> DiscreteFrameStream
 discreteSamples (_, samples) =
 	V.map (\sample -> round $ maxVolume * sample) samples
 
