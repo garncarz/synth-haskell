@@ -7,7 +7,7 @@ import Test.QuickCheck
 
 import Test.Framework
 import Test.Framework.Providers.HUnit
-import Test.Framework.Providers.QuickCheck
+import Test.Framework.Providers.QuickCheck2
 
 newtype Key = Key Int deriving (Show)
 
