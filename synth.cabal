@@ -2,8 +2,9 @@ name: synth
 version: 0.1.0.0
 synopsis: A MIDI to WAVE synthesizer 
 author: Ondřej Garncarz
-maintainer: gar.o@post.cz
+maintainer: ondrej@garncarz.cz
 category: Sound
+license: GPL
 build-type: Simple
 cabal-version: >= 1.8
 
