@@ -25,3 +25,6 @@ with no side effects whatsoever, you don't really expect GHC to cache them by an
 
 * [Eins](https://garncarz.github.io/synth-haskell/04-prokrastinacni_orgie.ogg) ([source MIDI](https://garncarz.github.io/synth-haskell/04-prokrastinacni_orgie.midi))
 * [Zwei](https://garncarz.github.io/synth-haskell/06-dechove_nastroje_v_d-dur.ogg) ([source MIDI](https://garncarz.github.io/synth-haskell/06-dechove_nastroje_v_d-dur.mid))
+
+
+<!-- ❄️ Hello to the GitHub Archive! ❄️ -->
