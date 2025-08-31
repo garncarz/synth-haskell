@@ -29,7 +29,7 @@ extractNotes [] _ = []
 extractNotes ((time, msg):rest) presets
 	| isNoteOn msg && velocity msg > 0 && channel msg /= 9 = (time, Tone {
 		pitch = absoluteFrequency $ key msg,
-		duration = findNextNoteOffTime (key msg) (channel msg) rest - time,
+		duration = findNextNoteOffTime (key msg) (channel msg) time rest - time,
 		volume = fromIntegral (velocity msg) / 128,
 		Types.preset = presetAt chan time presets,
 		Types.channel = chan }) : extractNotes rest presets
@@ -37,13 +37,13 @@ extractNotes ((time, msg):rest) presets
 	where chan = channel msg
 
 -- | Finds when a given note stops.
-findNextNoteOffTime :: Key -> Channel -> [(Time, Message)] -> Time
-findNextNoteOffTime _ _ [] = error "no next NoteOff"
-findNextNoteOffTime keyToStop chan ((time, msg):rest)
+findNextNoteOffTime :: Key -> Channel -> Time -> [(Time, Message)] -> Time
+findNextNoteOffTime _ _ noteStartTime [] = noteStartTime + 1.0  -- Default 1 second duration
+findNextNoteOffTime keyToStop chan noteStartTime ((time, msg):rest)
 	| isNoteOn msg && key msg == keyToStop && channel msg == chan &&
 		velocity msg == 0 = time
 	| isNoteOff msg && key msg == keyToStop && channel msg == chan = time
-	| otherwise = findNextNoteOffTime keyToStop chan rest
+	| otherwise = findNextNoteOffTime keyToStop chan noteStartTime rest
 
 
 defaultPreset = 1 :: Preset
