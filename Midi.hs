@@ -7,7 +7,8 @@ import Types hiding (channel, preset)
 import qualified Types
 
 import Codec.Midi as Midi
-import Data.IntervalMap.Strict (IntervalMap, Interval(..), insert, singleton,
+import qualified Data.IntervalMap.Strict as IM
+import Data.IntervalMap.Strict (IntervalMap, Interval(..), insert,
 	containing)
 import Data.List hiding (insert)
 import System.Console.CmdArgs.Verbosity
@@ -58,14 +59,14 @@ presetIntervals' track chan = pileUp aether $
 	infinity = 1 / 0
 
 	pileUp = foldl (\pile (interval, preset) -> insert interval preset pile)
-	aether = singleton infiniteInterval defaultPreset
+	aether = IM.singleton infiniteInterval defaultPreset
 	infiniteInterval = OpenInterval (-infinity) infinity
 
 presetsIntervals :: [(Time, Message)] -> [IntervalMap Time Preset]
 presetsIntervals track = map (presetIntervals' track) [0..16]
 
 presetAt :: Channel -> Time -> [IntervalMap Time Preset] -> Preset
-presetAt chan time db = snd . last $ containing (db !! chan) time
+presetAt chan time db = snd . last $ IM.toList $ containing (db !! chan) time
 
 
 absoluteFrequency :: Key -- ^ 69 (A in MIDI)
